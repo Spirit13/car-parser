@@ -1,0 +1,17 @@
+{
+    "name": "spirit/car-parser",
+    "description": "Car parser for av, abw, onliner",
+    "type": "project",
+    "require": {
+        "paquettg/php-html-parser": "^1.7",
+        "swiftmailer/swiftmailer": "^6.0",
+        "phpmailer/phpmailer": "^6.0"
+    },
+    "license": "Free",
+    "authors": [
+        {
+            "name": "Anton Gavrilov",
+            "email": "spirit.gavrilov@gmail.com"
+        }
+    ]
+}
