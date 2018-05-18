@@ -31,7 +31,7 @@ $urls = [
     'av-cars' => [
         'items' => '.listing-item',
         'pagination' => '.pages-numbers li a',
-        'cost' => '.listing-item-price small',
+        'cost' => '.listing-item-price strong',
         'year' => '.listing-item-price span',
         'link' => '.listing-item-title a',
         'location' => '.listing-item-location',
@@ -41,7 +41,7 @@ $urls = [
     'av-truck-vw' => [
         'items' => '.listing-item',
         'pagination' => '.pages-numbers li a',
-        'cost' => '.listing-item-price small',
+        'cost' => '.listing-item-price strong',
         'year' => '.listing-item-price span',
         'link' => '.listing-item-title a',
         'location' => '.listing-item-location',
@@ -51,7 +51,7 @@ $urls = [
     'av-truck-mb' => [
         'items' => '.listing-item',
         'pagination' => '.pages-numbers li a',
-        'cost' => '.listing-item-price small',
+        'cost' => '.listing-item-price strong',
         'year' => '.listing-item-price span',
         'link' => '.listing-item-title a',
         'location' => '.listing-item-location',
@@ -61,7 +61,7 @@ $urls = [
     'av-truck-mits' => [
         'items' => '.listing-item',
         'pagination' => '.pages-numbers li a',
-        'cost' => '.listing-item-price small',
+        'cost' => '.listing-item-price strong',
         'year' => '.listing-item-price span',
         'link' => '.listing-item-title a',
         'location' => '.listing-item-location',
@@ -71,7 +71,7 @@ $urls = [
     'av-truck-ford' => [
         'items' => '.listing-item',
         'pagination' => '.pages-numbers li a',
-        'cost' => '.listing-item-price small',
+        'cost' => '.listing-item-price strong',
         'year' => '.listing-item-price span',
         'link' => '.listing-item-title a',
         'location' => '.listing-item-location',
@@ -125,8 +125,8 @@ foreach ($urls as $site => $urlInfo) {
 
                 $costAttr = $car->find($urlInfo['cost']);
                 $cost = 'und';
-                if (count($cost)) {
-                    $cost = $costAttr[0]->innerHtml;
+                if ($costAttr[0]->firstChild()) {
+                    $cost = str_replace(' ', '', $costAttr[0]->firstChild()->text());
                 }
 
                 $locationAttr = $car->find($urlInfo['location']);
