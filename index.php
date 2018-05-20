@@ -5,6 +5,13 @@ use PHPHtmlParser\Dom;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+function sortByCost($a, $b) {
+    if ($a['cost'] == $b['cost']) {
+        return 0;
+    }
+    return ($a['cost'] < $b['cost']) ? -1 : 1;
+}
+
 $mail = new PHPMailer(true);                              // Passing `true` enables exceptions
 try {
     $mail->CharSet = 'UTF-8';
@@ -77,6 +84,16 @@ $urls = [
         'location' => '.listing-item-location',
         'image' => '.listing-item-image img',
         'url' => 'https://truck.av.by/search?module=truck&type_id=2&body_id=&brand_id=330&model_id=&year_from=&year_to=&currency=USD&price_from=500&price_to=2000&engine_volume_min=&engine_volume_max=&engine_id=&country_id=&mileage_min=&mileage_max='
+    ],
+    'abw' => [
+        'items' => '.product-full',
+        'pagination' => '.pagination .page-link',
+        'cost' => '.data-price-byn',
+        'year' => '.data-year span',
+        'link' => '.main-link',
+        'location' => '.location',
+        'image' => '.product-thumb img',
+        'url' => 'https://www.abw.by/car/sell/?search=1&type=1&sort=2&marka%5B%5D=64&marka%5B%5D=28&marka%5B%5D=29&marka%5B%5D=63&model%5B%5D=2469&model%5B%5D=2408&model%5B%5D=2463&model%5B%5D=2464&engine%5B%5D=1&capacity1=&capacity2=&mileage1=&mileage2=&year1=&year2=1994&price1=500&price2=2000&country=&text=&day='
     ]
 ];
 
@@ -107,7 +124,11 @@ foreach ($urls as $site => $urlInfo) {
     if (count($pages)) {
         foreach ($pages as $page) {
             $pageUrl = $page->getAttribute('href');
-            $dom->loadFromUrl($pageUrl);
+            if ($site == 'abw') {
+                $pageUrl = 'https://www.abw.by/car/sell' . $pageUrl;
+            }
+
+            $dom->loadFromUrl(str_replace('/?', '?', $pageUrl));
             $cars[] = $pageCars = $dom->find($urlInfo['items']);
             $urls[$site]['total'] += count($pageCars);
         }
@@ -119,15 +140,16 @@ foreach ($urls as $site => $urlInfo) {
             if (count($linkAttribute)) {
                 $link = $linkAttribute[0]->getAttribute('href');
                 $name = trim($linkAttribute[0]->innerHtml);
-
+                $link = trim($link, '/');
                 preg_match("/\/(\d+)$/", $link, $matches);
                 $carId = $matches[1];
 
                 $costAttr = $car->find($urlInfo['cost']);
-                $cost = 'und';
+                $cost = '0';
                 if ($costAttr[0]->firstChild()) {
-                    $cost = str_replace(' ', '', $costAttr[0]->firstChild()->text());
+                    $cost = str_replace([' ', 'руб.'], '', $costAttr[0]->firstChild()->text());
                 }
+                $cost = trim($cost);
 
                 $locationAttr = $car->find($urlInfo['location']);
                 $location = 'und';
@@ -183,14 +205,19 @@ foreach ($urls as $site => $urlInfo) {
     }
 
     if (count($carsExportNew)) {
+        uksort($carsExportNew, 'sortByCost');
         $body = '<html><meta http-equiv="Content-type" content="text/html; charset=utf-8" />';
         $body .= '<body>';
 
         $body .= '<table width="100%">';
+        $index = 0;
         foreach ($carsExportNew as $carId => $newCar) {
+            $index++;
             $body .= '<tr>';
+            $body .= '<td>' . $index . '</td>';
             $body .= '<td>' . $carId . '</td>';
-            $body .= '<td><a href="' . $newCar['link'] . '">' . $newCar['name'] . '</a></td>';
+            $body .= '<td>' . $newCar['name'] . '</td>';
+            $body .= '<td>' . $newCar['link'] . '</td>';
             $body .= '<td>' . $newCar['year'] . '</td>';
             $body .= '<td>' . $newCar['cost'] . '</td>';
             $body .= '<td>' . $newCar['costChange'] . '</td>';
