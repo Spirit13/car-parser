@@ -4,7 +4,6 @@
     "type": "project",
     "require": {
         "paquettg/php-html-parser": "^1.7",
-        "swiftmailer/swiftmailer": "^6.0",
         "phpmailer/phpmailer": "^6.0"
     },
     "license": "Free",
